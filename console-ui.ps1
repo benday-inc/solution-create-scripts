@@ -57,6 +57,10 @@ function CreateSolution(
 
 		Set-Location $solutionDirectory.FullName
 
+		# add references between projects
+		dotnet add $consoleUiDirectory reference $apiDirectory.FullName
+		dotnet add $unitTestsDirectory reference $apiDirectory.FullName
+		
 		# add projects to solution
 		dotnet sln add $consoleUiDirectory
 		dotnet sln add $apiDirectory
