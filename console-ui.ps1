@@ -81,7 +81,7 @@ $solutionName = $name
 
 # make sure project name is not empty
 if ([string]::IsNullOrEmpty($solutionName)) {
-	Write-Error "Solution / base project name cannot be empty" -ForegroundColor Red
+	Write-Error "Solution / base project name cannot be empty"
 	exit
 }
 
@@ -91,7 +91,7 @@ $startingDirectory = New-Object System.IO.DirectoryInfo($directory)
 # make sure the directory exists
 if (-not $startingDirectory.Exists) {
 	Write-Host "Starting directory: $directory"
-	Write-Error "Starting directory does not exist" -ForegroundColor Red
+	Write-Error "Starting directory does not exist"
 	exit
 }
 
@@ -100,7 +100,7 @@ $solutionDirectory = $startingDirectory.GetDirectories() | Where-Object { $_.Nam
 
 # fail if the solution directory already exists
 if ($solutionDirectory) {
-	Write-Error "Solution directory already exists" -ForegroundColor Red
+	Write-Error "Solution directory already exists"
 	exit
 }
 
@@ -110,7 +110,7 @@ $solutionDirectory = $startingDirectory.CreateSubdirectory($solutionName)
 # fail if the solution directory doesn't exist
 
 if (-not $solutionDirectory.Exists) {
-	Write-Error "Failed to create solution directory" -ForegroundColor Red
+	Write-Error "Failed to create solution directory"
 	exit
 }
 
