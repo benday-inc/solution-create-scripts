@@ -55,11 +55,17 @@ function CreateSolution(
 
 		dotnet new xunit
 
+		# add nuget package reference to FluentAssertions
+		dotnet add $unitTestsDirectory package FluentAssertions
+
 		Set-Location $solutionDirectory.FullName
 
 		# add references between projects
 		dotnet add $consoleUiDirectory reference $apiDirectory.FullName
 		dotnet add $unitTestsDirectory reference $apiDirectory.FullName
+
+		# add gitignore file
+		dotnet new gitignore
 		
 		# add projects to solution
 		dotnet sln add $consoleUiDirectory
