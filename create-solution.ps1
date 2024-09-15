@@ -103,68 +103,6 @@ if ($directory -eq $defaultDirectory) {
 	}
 }
 
-function CreateSolution(
-	[System.IO.DirectoryInfo]$solutionDirectory, 
-	[string]$solutionInfo.Name) {
-
-	Push-Location $solutionDirectory.FullName
-
-	try {
-		# create solution
-		dotnet new sln -n $solutionInfo.Name
-
-		# create source project(s)
-		$srcDirectory = $solutionDirectory.CreateSubdirectory("src")
-
-		Set-Location $srcDirectory.FullName
-
-		$consoleUiDirectory = $srcDirectory.CreateSubdirectory("$solutionInfo.Name.ConsoleUi")
-		
-		Set-Location $consoleUiDirectory.FullName
-
-		dotnet new console
-
-		Set-Location $srcDirectory.FullName
-		
-		$apiDirectory = $srcDirectory.CreateSubdirectory("$solutionInfo.Name.Api")
-
-		Set-Location $apiDirectory.FullName
-
-		dotnet new classlib
-	
-		# create test project(s)
-		$testDirectory = $solutionDirectory.CreateSubdirectory("test")
-
-		Set-Location $testDirectory.FullName
-
-		$unitTestsDirectory = $testDirectory.CreateSubdirectory("$solutionInfo.Name.UnitTests")
-
-		Set-Location $unitTestsDirectory.FullName
-
-		dotnet new xunit
-
-		# add nuget package reference to FluentAssertions
-		dotnet add $unitTestsDirectory package FluentAssertions
-
-		Set-Location $solutionDirectory.FullName
-
-		# add references between projects
-		dotnet add $consoleUiDirectory reference $apiDirectory.FullName
-		dotnet add $unitTestsDirectory reference $apiDirectory.FullName
-
-		# add gitignore file
-		dotnet new gitignore
-		
-		# add projects to solution
-		dotnet sln add $consoleUiDirectory
-		dotnet sln add $apiDirectory
-		dotnet sln add $unitTestsDirectory
-	}
-	finally {
-		Pop-Location
-	}
-}
-
 # make sure project name is not empty
 if ([string]::IsNullOrEmpty($solutionInfo.Name)) {
 	Write-Error "Solution / base project name cannot be empty"
@@ -200,7 +138,64 @@ if (-not $solutionDirectory.Exists) {
 	exit
 }
 
-CreateSolution $solutionDirectory $solutionInfo.Name
+Set-Location $solutionDirectory.FullName
+
+# create the solution
+dotnet new sln -n $solutionInfo.Name
+
+# foreach project in solutionInfo.Projects
+foreach ($project in $solutionInfo.Projects) {
+	$parentFolder = Join-Path $solutionDirectory $project.FolderName
+
+	if (-not (Test-Path $parentFolder)) {
+		New-Item -Path $parentFolder -ItemType Directory
+	}
+	
+	Set-Location $parentFolder
+
+	$projectDirectory = Join-Path $parentFolder $project.ProjectName
+
+	if (-not (Test-Path $projectDirectory)) {
+		New-Item -Path $projectDirectory -ItemType Directory
+	}
+
+	Set-Location $projectDirectory
+
+	dotnet new $project.ProjectType
+}
+
+Set-Location $solutionDirectory
+
+foreach ($projectReference in $solutionInfo.ProjectReferences) {
+	$fromProjectInfo = $solutionInfo.Projects | Where-Object { $_.ShortName -eq $projectReference.FromProjectShortName }
+	$toProjectInfo = $solutionInfo.Projects | Where-Object { $_.ShortName -eq $projectReference.ToProjectShortName }
+
+	# if either project is not found, exit
+	if (-not $fromProjectInfo -or -not $toProjectInfo) {
+		Write-Error "Project to or from not found"
+		exit
+	}
+
+	$fromParentFolder = Join-Path $solutionDirectory $fromProjectInfo.FolderName
+	$toParentFolder = Join-Path $solutionDirectory $toProjectInfo.FolderName
+
+	$fromProjectDirectory = Join-Path $fromParentFolder $fromProjectInfo.ProjectName
+	$toProjectDirectory = Join-Path $toParentFolder $toProjectInfo.$ProjectName
+
+	dotnet add $fromProjectDirectory reference $toProjectDirectory
+}
+
+Set-Location $solutionDirectory
+
+# add projects to solution
+foreach ($project in $solutionInfo.Projects) {
+	$parentFolder = Join-Path $solutionDirectory $project.FolderName
+	$projectDirectory = Join-Path $parentFolder $project.ProjectName
+
+	dotnet sln add $projectDirectory
+}
+
+Write-Host "Solution created in $solutionDirectory"
 
 
 
