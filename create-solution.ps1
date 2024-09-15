@@ -11,51 +11,6 @@ param(
 
 $directoryAtStartOfScript = $PWD
 
-class SolutionInfo {
-	[string] $Name
-	[System.Collections.Generic.List[ProjectInfo]] $Projects
-	[System.Collections.Generic.List[ProjectReference]] $ProjectReferences
-
-	SolutionInfo() {
-		$this.Projects = [System.Collections.Generic.List[ProjectInfo]]::new()
-		$this.ProjectReferences = [System.Collections.Generic.List[ProjectReference]]::new()
-	}
-
-	[ProjectInfo] AddProject([string]$shortName, [string]$projectType, [string]$folderName, [string]$projectName) {
-		$project = [ProjectInfo]::new()
-		$project.ShortName = $shortName
-		$project.ProjectType = $projectType
-		$project.FolderName = $folderName
-		$project.ProjectName = $projectName
-
-		$this.Projects.Add($project)
-
-		return $project
-	}
-
-	[ProjectReference] AddProjectReference([string]$fromProjectShortName, [string]$toProjectShortName) {
-		$projectReference = [ProjectReference]::new()
-		$projectReference.FromProjectShortName = $fromProjectShortName
-		$projectReference.ToProjectShortName = $toProjectShortName
-
-		$this.ProjectReferences.Add($projectReference)
-
-		return $projectReference
-	}
-}
-
-class ProjectInfo {
-	[string] $ShortName
-	[string] $ProjectType
-	[string] $FolderName
-	[string] $ProjectName
-}
-
-class ProjectReference {
-	[string] $FromProjectShortName
-	[string] $ToProjectShortName
-}
-
 $solutionInfo = [SolutionInfo]::new()
 $solutionInfo.Name = $name
 
@@ -214,3 +169,47 @@ Set-Location $directoryAtStartOfScript
 
 
 
+class SolutionInfo {
+	[string] $Name
+	[System.Collections.Generic.List[ProjectInfo]] $Projects
+	[System.Collections.Generic.List[ProjectReference]] $ProjectReferences
+
+	SolutionInfo() {
+		$this.Projects = [System.Collections.Generic.List[ProjectInfo]]::new()
+		$this.ProjectReferences = [System.Collections.Generic.List[ProjectReference]]::new()
+	}
+
+	[ProjectInfo] AddProject([string]$shortName, [string]$projectType, [string]$folderName, [string]$projectName) {
+		$project = [ProjectInfo]::new()
+		$project.ShortName = $shortName
+		$project.ProjectType = $projectType
+		$project.FolderName = $folderName
+		$project.ProjectName = $projectName
+
+		$this.Projects.Add($project)
+
+		return $project
+	}
+
+	[ProjectReference] AddProjectReference([string]$fromProjectShortName, [string]$toProjectShortName) {
+		$projectReference = [ProjectReference]::new()
+		$projectReference.FromProjectShortName = $fromProjectShortName
+		$projectReference.ToProjectShortName = $toProjectShortName
+
+		$this.ProjectReferences.Add($projectReference)
+
+		return $projectReference
+	}
+}
+
+class ProjectInfo {
+	[string] $ShortName
+	[string] $ProjectType
+	[string] $FolderName
+	[string] $ProjectName
+}
+
+class ProjectReference {
+	[string] $FromProjectShortName
+	[string] $ToProjectShortName
+}
