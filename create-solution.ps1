@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-	[Parameter(Mandatory = $true, HelpMessage = "Project type", Position = 1)]
+	[Parameter(Mandatory = $true, HelpMessage = "Project type (console, web, webapi)", Position = 1)]
 	[ValidateSet("console", "web", "webapi")]
 	[string]$projectType,
 	[Parameter(Mandatory = $true, HelpMessage = "Name of the solution / base name for the project", Position = 2)]
@@ -8,6 +8,8 @@ param(
 	[Parameter(Mandatory = $false, HelpMessage = "Directory where the solution will be created off of", Position = 2)]
 	[string]$directory = (Join-Path $PSScriptRoot "demos")
 )
+
+$directoryAtStartOfScript = $PWD
 
 class SolutionInfo {
 	[string] $Name
@@ -78,7 +80,7 @@ elseif ($projectType -eq "web") {
 	$solutionInfo.AddProjectReference($integrationTestsProject.ShortName, $webProject.ShortName)
 }
 elseif ($projectType -eq "webapi") {
-	$webProject = $solutionInfo.AddProject("webapi", "webapi", "src", "$name.Web")
+	$webProject = $solutionInfo.AddProject("webapi", "webapi", "src", "$name.WebApi")
 	$apiProject = $solutionInfo.AddProject("api", "classlib", "src", "$name.Api")
 	$unitTestsProject = $solutionInfo.AddProject("unittests", "xunit", "test", "$name.UnitTests")
 	$integrationTestsProject = $solutionInfo.AddProject("integrationtests", "xunit", "test", "$name.IntegrationTests")
@@ -140,11 +142,16 @@ if (-not $solutionDirectory.Exists) {
 
 Set-Location $solutionDirectory.FullName
 
+Write-Host "Creating solution in $solutionDirectory..."
+
 # create the solution
 dotnet new sln -n $solutionInfo.Name
 
-# foreach project in solutionInfo.Projects
+Write-Host "Creating projects..."
+
 foreach ($project in $solutionInfo.Projects) {
+	Write-Host "Creating project $($project.ProjectName)..."
+
 	$parentFolder = Join-Path $solutionDirectory $project.FolderName
 
 	if (-not (Test-Path $parentFolder)) {
@@ -166,7 +173,11 @@ foreach ($project in $solutionInfo.Projects) {
 
 Set-Location $solutionDirectory
 
+Write-Host "Adding project references..."
+
 foreach ($projectReference in $solutionInfo.ProjectReferences) {
+	Write-Host "Adding reference from $($projectReference.FromProjectShortName) to $($projectReference.ToProjectShortName)..."
+
 	$fromProjectInfo = $solutionInfo.Projects | Where-Object { $_.ShortName -eq $projectReference.FromProjectShortName }
 	$toProjectInfo = $solutionInfo.Projects | Where-Object { $_.ShortName -eq $projectReference.ToProjectShortName }
 
@@ -180,12 +191,14 @@ foreach ($projectReference in $solutionInfo.ProjectReferences) {
 	$toParentFolder = Join-Path $solutionDirectory $toProjectInfo.FolderName
 
 	$fromProjectDirectory = Join-Path $fromParentFolder $fromProjectInfo.ProjectName
-	$toProjectDirectory = Join-Path $toParentFolder $toProjectInfo.$ProjectName
+	$toProjectDirectory = Join-Path $toParentFolder $toProjectInfo.ProjectName
 
 	dotnet add $fromProjectDirectory reference $toProjectDirectory
 }
 
 Set-Location $solutionDirectory
+
+Write-Host "Adding projects to solution..."
 
 # add projects to solution
 foreach ($project in $solutionInfo.Projects) {
@@ -197,7 +210,7 @@ foreach ($project in $solutionInfo.Projects) {
 
 Write-Host "Solution created in $solutionDirectory"
 
-
+Set-Location $directoryAtStartOfScript
 
 
 
