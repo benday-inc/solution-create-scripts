@@ -23,7 +23,7 @@ if ($projectType -eq "console") {
 	$solutionInfo.AddProjectReference($unitTestsProject.ShortName, $apiProject.ShortName)
 }
 elseif ($projectType -eq "web") {
-	$webProject = $solutionInfo.AddProject("web", "web", "src", "$name.Web")
+	$webProject = $solutionInfo.AddProject("web", "mvc", "src", "$name.Web")
 	$apiProject = $solutionInfo.AddProject("api", "classlib", "src", "$name.Api")
 	$unitTestsProject = $solutionInfo.AddProject("unittests", "xunit", "test", "$name.UnitTests")
 	$integrationTestsProject = $solutionInfo.AddProject("integrationtests", "xunit", "test", "$name.IntegrationTests")
