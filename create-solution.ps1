@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
 	[Parameter(Mandatory = $true, HelpMessage = "Project type (console, web, webapi)", Position = 1)]
-	[ValidateSet("console", "web", "webapi")]
+	[ValidateSet("console", "web", "mvc", "webapi")]
 	[string]$projectType,
 	[Parameter(Mandatory = $true, HelpMessage = "Name of the solution / base name for the project", Position = 2)]
 	[string]$name,
@@ -22,7 +22,7 @@ if ($projectType -eq "console") {
 	$solutionInfo.AddProjectReference($consoleUiProject.ShortName, $apiProject.ShortName)
 	$solutionInfo.AddProjectReference($unitTestsProject.ShortName, $apiProject.ShortName)
 }
-elseif ($projectType -eq "web") {
+elseif ($projectType -eq "web" -or $projectType -eq "mvc") {
 	$webProject = $solutionInfo.AddProject("web", "mvc", "src", "$name.Web")
 	$apiProject = $solutionInfo.AddProject("api", "classlib", "src", "$name.Api")
 	$unitTestsProject = $solutionInfo.AddProject("unittests", "xunit", "test", "$name.UnitTests")
